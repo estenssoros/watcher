@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/sirupsen/logrus"
 )
 
 type watcher struct {
@@ -30,6 +31,7 @@ func newWatcher(r *manager) *watcher {
 func (w *watcher) start() {
 	go func() {
 		for {
+			var count int
 			err := filepath.Walk(w.AppRoot, func(path string, info os.FileInfo, err error) error {
 				if info == nil {
 					w.cancelFunc()
@@ -41,17 +43,22 @@ func (w *watcher) start() {
 						return filepath.SkipDir
 					}
 					if len(path) > 1 && strings.HasPrefix(filepath.Base(path), ".") || w.isIgnoredFolder(path) {
+						logrus.Infof("skipping %s", path)
 						return filepath.SkipDir
 					}
 				}
+				if strings.HasSuffix(path, "test.go") {
+					return filepath.SkipDir
+				}
 
 				if w.isWatchedFile(path) {
+					count++
 					w.Add(path)
 				}
 
 				return nil
 			})
-
+			logrus.Infof("watching %d files", count)
 			if err != nil {
 				w.context.Done()
 				break
