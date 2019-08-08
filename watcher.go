@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/sirupsen/logrus"
 )
 
 type watcher struct {
@@ -43,10 +42,10 @@ func (w *watcher) start() {
 						return filepath.SkipDir
 					}
 					if len(path) > 1 && strings.HasPrefix(filepath.Base(path), ".") || w.isIgnoredFolder(path) {
-						logrus.Infof("skipping %s", path)
 						return filepath.SkipDir
 					}
 				}
+
 				if strings.HasSuffix(path, "test.go") {
 					return filepath.SkipDir
 				}
@@ -58,7 +57,6 @@ func (w *watcher) start() {
 
 				return nil
 			})
-			logrus.Infof("watching %d files", count)
 			if err != nil {
 				w.context.Done()
 				break
