@@ -112,9 +112,11 @@ func (m *manager) runner() {
 		<-m.Restart
 		if cmd != nil {
 			pid := cmd.Process.Pid
-			logrus.Infof("Stopping: PID %d", pid)
+			logrus.Infof("stopping: PID %d", pid)
 			cmd.Process.Kill()
 		}
+
+		cmd = exec.Command(m.FullBuildPath())
 		go func() {
 			err := m.runAndListen(cmd)
 			if err != nil {
